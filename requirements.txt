@@ -2,3 +2,4 @@ beautifulsoup4
 pytest
 tiktoken
 sentence-transformers
+faiss-cpu
