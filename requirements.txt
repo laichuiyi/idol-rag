@@ -3,3 +3,5 @@ pytest
 tiktoken
 sentence-transformers
 faiss-cpu
+google-genai
+python-dotenv
