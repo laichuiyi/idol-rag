@@ -8,15 +8,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.chunking.blog_chunker import chunk_blog_document
 from src.embedding.embedder import Embedder
 from src.generation.generator import Generator
-from src.ingestion.blog_parser import parse_blog_html
+from src.indexing.blog_index import build_blog_vector_store
 from src.rag.pipeline import RAGPipeline
 from src.retrieval.retriever import Retriever
-from src.retrieval.vector_store import VectorStore
 
-SAMPLE_HTML = PROJECT_ROOT / "data" / "raw" / "blog" / "綴夏.html"
+BLOG_DIRECTORY = PROJECT_ROOT / "data" / "raw" / "blog"
 QUESTION = "井上和有冇講過美空做center？"
 TOP_K = 3
 
@@ -36,14 +34,8 @@ def main() -> None:
     api_key = _require_env("GEMINI_API_KEY")
     model_name = _require_env("GEMINI_MODEL")
 
-    document = parse_blog_html(SAMPLE_HTML)
-    chunks = chunk_blog_document(document)
-
     embedder = Embedder()
-    chunk_embeddings = embedder.embed_texts([chunk.content for chunk in chunks])
-
-    store = VectorStore()
-    store.add(chunks, chunk_embeddings)
+    store = build_blog_vector_store(BLOG_DIRECTORY, embedder)
 
     retriever = Retriever(embedder, store)
     generator = Generator(api_key=api_key, model_name=model_name)
