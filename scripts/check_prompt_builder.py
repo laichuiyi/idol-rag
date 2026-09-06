@@ -7,8 +7,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.chunking.blog_chunker import chunk_blog_document
 from src.embedding.embedder import Embedder
-from src.generation.context_builder import build_context
-from src.generation.prompt_builder import build_answer_prompt
+from src.generation.prompts import build_answer_prompt, build_context
 from src.ingestion.blog_parser import parse_blog_html
 from src.retrieval.retriever import Retriever
 from src.retrieval.vector_store import VectorStore

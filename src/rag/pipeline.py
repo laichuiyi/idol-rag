@@ -1,6 +1,5 @@
-from src.generation.context_builder import build_context
 from src.generation.generator import Generator
-from src.generation.prompt_builder import build_answer_prompt
+from src.generation.prompts import build_answer_prompt, build_context
 from src.retrieval.retriever import Retriever
 
 
