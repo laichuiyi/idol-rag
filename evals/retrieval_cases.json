@@ -1,0 +1,18 @@
+[
+  {
+    "query": "井上和有冇講過美空做center？",
+    "relevant_chunk_ids": ["104653:5"]
+  },
+  {
+    "query": "今次單曲嘅center係邊個？",
+    "relevant_chunk_ids": ["104653:5"]
+  },
+  {
+    "query": "一ノ瀬美空係咪做咗今次單曲嘅center？",
+    "relevant_chunk_ids": ["104653:5"]
+  },
+  {
+    "query": "今回のシングルのセンターは誰？",
+    "relevant_chunk_ids": ["104653:5"]
+  }
+]
