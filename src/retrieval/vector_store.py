@@ -1,12 +1,19 @@
-import numpy as np
+from datetime import datetime
+from pathlib import Path
+import json
+
 import faiss
+import numpy as np
 
 from src.models.chunk import Chunk
+
+INDEX_FILENAME = "index.faiss"
+CHUNKS_FILENAME = "chunks.json"
 
 
 class VectorStore:
     def __init__(self) -> None:
-        self._index: faiss.IndexFlatIP | None = None
+        self._index: faiss.Index | None = None
         self._chunks: list[Chunk] = []
 
     def add(self, chunks: list[Chunk], embeddings: list[list[float]]) -> None:
@@ -54,3 +61,56 @@ class VectorStore:
 
     def __len__(self) -> int:
         return len(self._chunks)
+
+    def save(self, directory: Path) -> None:
+        directory.mkdir(parents=True, exist_ok=True)
+        chunks_payload = [_chunk_to_dict(chunk) for chunk in self._chunks]
+        (directory / CHUNKS_FILENAME).write_text(
+            json.dumps(chunks_payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        if self._index is not None and self._chunks:
+            faiss.write_index(self._index, str(directory / INDEX_FILENAME))
+
+    @classmethod
+    def load(cls, directory: Path) -> "VectorStore":
+        raw_chunks = json.loads((directory / CHUNKS_FILENAME).read_text(encoding="utf-8"))
+        store = cls()
+        store._chunks = [_chunk_from_dict(item) for item in raw_chunks]
+        if not store._chunks:
+            return store
+
+        index = faiss.read_index(str(directory / INDEX_FILENAME))
+        if index.ntotal != len(store._chunks):
+            raise ValueError(
+                f"FAISS index size {index.ntotal} does not match "
+                f"chunk count {len(store._chunks)}"
+            )
+        store._index = index
+        return store
+
+
+def _chunk_to_dict(chunk: Chunk) -> dict:
+    return {
+        "chunk_id": chunk.chunk_id,
+        "document_id": chunk.document_id,
+        "content": chunk.content,
+        "author": chunk.author,
+        "title": chunk.title,
+        "published_at": chunk.published_at.isoformat(),
+        "source_url": chunk.source_url,
+        "source_type": chunk.source_type,
+    }
+
+
+def _chunk_from_dict(payload: dict) -> Chunk:
+    return Chunk(
+        chunk_id=payload["chunk_id"],
+        document_id=payload["document_id"],
+        content=payload["content"],
+        author=payload["author"],
+        title=payload["title"],
+        published_at=datetime.fromisoformat(payload["published_at"]),
+        source_url=payload["source_url"],
+        source_type=payload["source_type"],
+    )
